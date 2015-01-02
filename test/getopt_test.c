@@ -35,6 +35,10 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#ifndef __linux
+#error This program was made for Linux to check compatibility with GNU C Library getopt and ya_getopt.
+#endif
+
 #ifdef USE_YA_GETOPT
 #include "ya_getopt.h"
 #endif

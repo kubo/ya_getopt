@@ -40,6 +40,23 @@ int ya_optind = 1;
 int ya_opterr = 1;
 int ya_optopt = '?';
 
+static int optstarts(const char *os, char opt)
+{
+    while (1) {
+        switch (*os) {
+        case ':':
+        case '+':
+            if (*os == opt) {
+                return 1;
+            }
+            break;
+        default:
+            return 0;
+        }
+        os++;
+    }
+}
+
 int ya_getopt(int argc, char * const argv[], const char *optstring)
 {
     static int idx = 0;
@@ -54,101 +71,108 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
     if (start != 0) {
         int last_pos = ya_optind - 1;
 
-	ya_optind -= end - start;
-	while (start < end--) {
-	    int i;
-	    arg = argv[end];
+        ya_optind -= end - start;
+        while (start < end--) {
+            int i;
+            arg = argv[end];
 
-	    for (i = end; i < last_pos; i++) {
-	        ((char **)argv)[i] = argv[i + 1];
-	    }
-	    ((char const **)argv)[i] = arg;
-	    last_pos--;
-	}
+            for (i = end; i < last_pos; i++) {
+                ((char **)argv)[i] = argv[i + 1];
+            }
+            ((char const **)argv)[i] = arg;
+            last_pos--;
+        }
         start = 0;
     }
 
     if (ya_optind >= argc) {
-	ya_optarg = NULL;
+        ya_optarg = NULL;
         return -1;
     }
     arg = argv[ya_optind];
     if (idx == 0) {
         if (*arg != '-') {
-	    if (getenv("POSIXLY_CORRECT") == NULL) {
-	        int i;
-		start = ya_optind;
-		for (i = ya_optind + 1; i < argc; i++) {
-		    if (argv[i][0] == '-') {
-		        end = i;
-		        break;
-		    }
-		}
-		if (i == argc) {
-		    ya_optarg = NULL;
-		    return -1;
-		}
-		ya_optind = i;
-		arg = argv[ya_optind];
-	    } else {
-	        ya_optarg = NULL;
-		return -1;
-	    }
-	}
-	if (strcmp(arg, "--") == 0) {
-	    ya_optind++;
-	    return -1;
-	}
-	idx = 1;
+            if (optstring[0] != '+' && getenv("POSIXLY_CORRECT") == NULL) {
+                /* GNU extension */
+                int i;
+                start = ya_optind;
+                for (i = ya_optind + 1; i < argc; i++) {
+                    if (argv[i][0] == '-') {
+                        end = i;
+                        break;
+                    }
+                }
+                if (i == argc) {
+                    ya_optarg = NULL;
+                    return -1;
+                }
+                ya_optind = i;
+                arg = argv[ya_optind];
+            } else {
+                /* POSIX  */
+                ya_optarg = NULL;
+                return -1;
+            }
+        }
+        if (strcmp(arg, "--") == 0) {
+            ya_optind++;
+            return -1;
+        }
+        idx = 1;
     }
     opt = arg[idx];
     for (os = optstring; *os != 0; os++) {
         if (opt == *os) {
-	    break;
-	}
+            break;
+        }
     }
     if (*os == 0) {
         ya_optarg = NULL;
         ya_optopt = opt;
-	if (ya_opterr && optstring[0] != ':') {
-	    fprintf(stderr, "%s: invalid option -- '%c'\n", argv[0], opt);
-	}
-	if (arg[++idx] == 0) {
-	    ya_optind++;
-	    idx = 0;
-	}
-	return '?';
+        if (ya_opterr && !optstarts(optstring, ':')) {
+            fprintf(stderr, "%s: invalid option -- '%c'\n", argv[0], opt);
+        }
+        if (arg[++idx] == 0) {
+            ya_optind++;
+            idx = 0;
+        }
+        return '?';
     }
     if (os[1] == ':') {
-	if (argv[ya_optind][idx + 1] == 0) {
-	    ya_optind++;
-	    if (ya_optind == argc) {
-	        ya_optarg = NULL;
-		ya_optopt = opt;
-		if (ya_opterr && optstring[0] != ':') {
-		    fprintf(stderr, "%s: option requires an argument -- '%c'\n", argv[0], opt);
-		}
-		if (optstring[0] == ':') {
-		    return ':';
-		} else {
-		    return '?';
-		}
-	    }
-	    ya_optarg = argv[ya_optind];
-	    ya_optind++;
-	} else {
-	    ya_optarg = argv[ya_optind] + idx + 1;
-	    ya_optind++;
-	}
-	idx = 0;
+        if (argv[ya_optind][idx + 1] == 0) {
+            ya_optind++;
+            if (os[2] == ':') {
+                /* optional argument */
+                ya_optarg = NULL;
+            } else {
+                if (ya_optind == argc) {
+                    ya_optarg = NULL;
+                    ya_optopt = opt;
+                    if (ya_opterr && !optstarts(optstring, ':')) {
+                        fprintf(stderr, "%s: option requires an argument -- '%c'\n", argv[0], opt);
+                    }
+                    if (optstarts(optstring, ':')) {
+                        return ':';
+                    } else {
+                        return '?';
+                    }
+                }
+                ya_optarg = argv[ya_optind];
+                ya_optind++;
+            }
+        } else {
+            ya_optarg = argv[ya_optind] + idx + 1;
+            ya_optind++;
+        }
+        idx = 0;
     } else {
         ya_optarg = NULL;
-	if (argv[ya_optind][idx + 1] == 0) {
-	    idx = 0;
-	    ya_optind++;
-	} else {
-	    idx++;
-	}
+        if (argv[ya_optind][idx + 1] == 0) {
+            idx = 0;
+            ya_optind++;
+        } else {
+            idx++;
+        }
     }
     return opt;
 }

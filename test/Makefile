@@ -10,7 +10,7 @@ check: getopt_test ya_getopt_test
 	    echo ===== without POSIXLY_CORRECT =====; \
 	    unset POSIXLY_CORRECT; \
 	  fi; \
-	  for optstring in "ab:" ":ab:"; do \
+	  for optstring in "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:"; do \
 	    for args in "" \
 	                "foo" \
 	                "-c" \
@@ -41,7 +41,7 @@ check: getopt_test ya_getopt_test
 	        echo PASS; \
 	      else \
 	        echo FAILED; \
-	        diff -u getopt_test.out ya_getopt_test.out; \
+	        diff -u getopt_test.out ya_getopt_test.out | head -20; \
 	        exit 1; \
 	      fi; \
 	    done; \

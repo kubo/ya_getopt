@@ -1,5 +1,5 @@
-ya_getopt - Yet another getopt compatible with GNU C library getopt
-===================================================================
+ya_getopt - Yet another getopt
+==============================
 
 What is ya_getopt.
 ------------------
@@ -20,3 +20,9 @@ License
 -------
 
 2-clause BSD-style license
+
+Other getopt functions
+----------------------
+
+* [public domain AT&T getopt](https://www.google.co.jp/search?q=public+domain+at%26t+getopt)
+* [Full getopt Port for Unicode and Multibyte Microsoft Visual C, C++, or MFC Projects](http://www.codeproject.com/Articles/157001/Full-getopt-Port-for-Unicode-and-Multibyte-Microso)
