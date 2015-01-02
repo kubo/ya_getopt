@@ -10,7 +10,7 @@ check: getopt_test ya_getopt_test
 	    echo ===== without POSIXLY_CORRECT =====; \
 	    unset POSIXLY_CORRECT; \
 	  fi; \
-	  for optstring in "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:"; do \
+	  for optstring in "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:" "-ab:" "-+ab:" "+-ab:" "-:ab:" ":-ab:"; do \
 	    for args in "" \
 	                "foo" \
 	                "-c" \

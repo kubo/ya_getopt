@@ -46,6 +46,7 @@ static int optstarts(const char *os, char opt)
         switch (*os) {
         case ':':
         case '+':
+        case '-':
             if (*os == opt) {
                 return 1;
             }
@@ -95,6 +96,12 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
             if (optstring[0] != '+' && getenv("POSIXLY_CORRECT") == NULL) {
                 /* GNU extension */
                 int i;
+                if (optstring[0] == '-') {
+                    ya_optarg = argv[optind++];
+                    start = 0;
+                    return 1;
+                }
+
                 start = ya_optind;
                 for (i = ya_optind + 1; i < argc; i++) {
                     if (argv[i][0] == '-') {
@@ -110,6 +117,11 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
                 arg = argv[ya_optind];
             } else {
                 /* POSIX  */
+                if (optstring[0] == '-') {
+                    ya_optarg = argv[optind++];
+                    start = 0;
+                    return 1;
+                }
                 ya_optarg = NULL;
                 return -1;
             }
@@ -122,6 +134,9 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
     }
     opt = arg[idx];
     for (os = optstring; *os != 0; os++) {
+        if (os == optstring && *os == '-') {
+            continue;
+        }
         if (opt == *os) {
             break;
         }
