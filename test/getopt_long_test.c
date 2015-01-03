@@ -43,9 +43,21 @@
 
 #ifdef USE_YA_GETOPT
 #include "ya_getopt.h"
+#else
+#include <getopt.h>
 #endif
 
-static void print_opts(int opt, int argc, char **argv)
+static int bar_flag;
+
+static struct option longopts[] = {
+    {"foo", no_argument, NULL, 1},
+    {"bar", required_argument, &bar_flag, 2},
+    {"baz", optional_argument, NULL, 3},
+    {"qux", 4 /* invalid value */, NULL, 4},
+    {NULL,},
+};
+
+static void print_opts(int opt, int argc, char **argv, int longindex)
 {
     int i;
 
@@ -62,10 +74,11 @@ static void print_opts(int opt, int argc, char **argv)
         fprintf(stderr, "optopt = %3d, ", optopt);
     }
     if (optarg == NULL) {
-        fprintf(stderr, "optarg = (null)\n");
+        fprintf(stderr, "optarg = (null), ");
     } else {
-        fprintf(stderr, "optarg = \"%s\"\n", optarg);
+        fprintf(stderr, "optarg = \"%s\", ", optarg);
     }
+    fprintf(stderr, "longindex = %d, bar_flag = %d\n", longindex, bar_flag);
     for (i = 0; i < argc; i++) {
         fprintf(stderr, "'%s'%c", argv[i], (i + 1 == argc) ? '\n' : ' ');
     }
@@ -75,6 +88,7 @@ int main(int argc, char **argv)
 {
     int opt = -1;
     const char *optstring = getenv("OPTSTRING");
+    int longindex = -1;
     struct rlimit rlim = {1, 1};
 
     setrlimit(RLIMIT_CPU, &rlim); /* to prevent infinite loop */
@@ -87,11 +101,11 @@ int main(int argc, char **argv)
         opterr = atoi(getenv("OPTERR"));
     }
 
-    argv[0] = "getopt_test";
-    print_opts(opt, argc, argv);
-    while ((opt = getopt(argc, argv, optstring)) != -1) {
-        print_opts(opt, argc, argv);
+    argv[0] = "getopt_test_long";
+    print_opts(opt, argc, argv, longindex);
+    while ((opt = getopt_long(argc, argv, optstring, longopts, &longindex)) != -1) {
+        print_opts(opt, argc, argv, longindex);
     }
-    print_opts(opt, argc, argv);
+    print_opts(opt, argc, argv, longindex);
     return 0;
 }

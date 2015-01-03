@@ -45,6 +45,7 @@ static int ya_charidx = 0;
 static int optstarts(const char *os, char opt);
 static void ya_getopt_error(const char *optstring, const char *format, ...);
 static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstring);
+static int ya_getopt_longopts(int argc, char * const argv[], int offset, const char *optstring, const struct option *longopts, int *longindex);
 
 static int optstarts(const char *os, char opt)
 {
@@ -75,6 +76,11 @@ static void ya_getopt_error(const char *optstring, const char *format, ...)
 }
 
 int ya_getopt(int argc, char * const argv[], const char *optstring)
+{
+    return ya_getopt_long(argc, argv, optstring, NULL, NULL);
+}
+
+int ya_getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex)
 {
     static int start, end;
     const char *arg;
@@ -142,6 +148,9 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
         if (strcmp(arg, "--") == 0) {
             ya_optind++;
             return -1;
+        }
+        if (longopts != NULL && arg[1] == '-') {
+            return ya_getopt_longopts(argc, argv, 2, optstring, longopts, longindex);
         }
         ya_charidx = 1;
     }
@@ -212,4 +221,63 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
         }
     }
     return opt;
+}
+
+static int ya_getopt_longopts(int argc, char * const argv[], int offset, const char *optstring, const struct option *longopts, int *longindex)
+{
+    char *arg = argv[ya_optind] + offset;
+    char *val = NULL;
+    const struct option *opt;
+    size_t namelen;
+    int idx;
+
+    for (idx = 0; longopts[idx].name != NULL; idx++) {
+        opt = &longopts[idx];
+        namelen = strlen(opt->name);
+        if (strncmp(arg, opt->name, namelen) == 0) {
+            switch (arg[namelen]) {
+            case '\0':
+                switch (opt->has_arg) {
+                case ya_required_argument:
+                    ya_optind++;
+                    if (ya_optind == argc) {
+                        ya_optarg = NULL;
+                        ya_optopt = opt->val;
+                        ya_getopt_error(optstring, "%s: option '--%s' requires an argument\n", argv[0], opt->name);
+                        if (optstarts(optstring, ':')) {
+                            return ':';
+                        } else {
+                            return '?';
+                        }
+                    }
+                    val = argv[ya_optind];
+                    break;
+                }
+                goto found;
+            case '=':
+                if (opt->has_arg == ya_no_argument) {
+                    ya_optind++;
+                    ya_optarg = NULL;
+                    ya_optopt = opt->val;
+                    ya_getopt_error(optstring, "%s: option '--%s' doesn't allow an argument\n", argv[0], opt->name);
+                    return '?';
+                }
+                val = arg + namelen + 1;
+                goto found;
+            }
+        }
+    }
+    ya_getopt_error(optstring, "%s: unrecognized option '%s'\n", argv[0], argv[ya_optind]);
+    ya_optind++;
+    return '?';
+found:
+    ya_optarg = val;
+    ya_optind++;
+    if (opt->flag) {
+        *opt->flag = opt->val;
+    }
+    if (longindex) {
+        *longindex = idx;
+    }
+    return opt->flag ? 0 : opt->val;
 }
