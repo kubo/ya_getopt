@@ -53,6 +53,18 @@ check: $(PROGS)
 	                "-baz=val" \
 	                "-qux=val" \
 	                "-quux=val" \
+	                "-afoo" \
+	                "-abar" \
+	                "-abaz" \
+	                "-aquux" \
+	                "-afoo val" \
+	                "-abar val" \
+	                "-abaz val" \
+	                "-aquux val" \
+	                "-afoo=val" \
+	                "-abar=val" \
+	                "-abaz=val" \
+	                "-aquux=val" \
 	                "-a foo -b bar" \
 	                "-a -- -b bar" \
 	                "-a --- -b bar" \
