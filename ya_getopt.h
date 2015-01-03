@@ -47,6 +47,8 @@ struct option {
 int ya_getopt(int argc, char * const argv[], const char *optstring);
 int ya_getopt_long(int argc, char * const argv[], const char *optstring,
                    const struct option *longopts, int *longindex);
+int ya_getopt_long_only(int argc, char * const argv[], const char *optstring,
+                        const struct option *longopts, int *longindex);
 
 extern char *ya_optarg;
 extern int ya_optind, ya_opterr, ya_optopt;
@@ -54,6 +56,7 @@ extern int ya_optind, ya_opterr, ya_optopt;
 #ifndef YA_GETOPT_NO_COMPAT_MACRO
 #define getopt ya_getopt
 #define getopt_long ya_getopt_long
+#define getopt_long_only ya_getopt_long_only
 #define optarg ya_optarg
 #define optind ya_optind
 #define opterr ya_opterr
