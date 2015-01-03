@@ -5,7 +5,7 @@ What is ya_getopt.
 ------------------
 
 Ya_getopt is a drop-in replacement of [GNU C library getopt](http://man7.org/linux/man-pages/man3/getopt.3.html).
-It has GNU getopt(), getopt_long() and getopt_long_only() except the following GNU extension.
+`getopt()`, `getopt_long()` and `getopt_long_only()` are implemented excluding the following GNU extension feature.
 
 > If *optstring* contains **W** followed by a semicolon, then **-W** **foo** is
 > treated as the long option **--foo**.
