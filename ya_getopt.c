@@ -69,7 +69,7 @@ int ya_getopt(int argc, char * const argv[], const char *optstring)
     if (ya_optopt == '?') {
         ya_optopt = 0;
     }
-    if (start != 0) {
+    if (idx == 0 && start != 0) {
         int last_pos = ya_optind - 1;
 
         ya_optind -= end - start;

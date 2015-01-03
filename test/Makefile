@@ -24,6 +24,7 @@ check: getopt_test ya_getopt_test
 	                "-a -- -b bar" \
 	                "-a --- -b bar" \
 	                "-a foo bar baz -a" \
+	                "-a foo bar baz -aa" \
 	                "-a foo bar baz -a qux" \
 	                "-a foo bar baz -a qux quux" \
 	                "-a foo bar baz -a qux quux -a" \
