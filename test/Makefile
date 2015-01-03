@@ -1,3 +1,5 @@
+CFLAGS = -Wall
+
 all: getopt_test ya_getopt_test
 
 check: getopt_test ya_getopt_test
@@ -35,25 +37,23 @@ check: getopt_test ya_getopt_test
 	                "-barg foo bar baz -barg qux" \
 	                "-barg foo bar baz -barg qux quux" \
 	                "-a foo -b bar -a baz -c qux"; do \
-	      echo -n OPTSTRING=\'$$optstring\' ARGS=\'$$args\' ... ; \
 	      env OPTSTRING=$$optstring ./getopt_test $$args 2> getopt_test.out; \
 	      env OPTSTRING=$$optstring ./ya_getopt_test $$args 2> ya_getopt_test.out; \
-	      if cmp getopt_test.out ya_getopt_test.out >/dev/null; then \
-	        echo PASS; \
-	      else \
-	        echo FAILED; \
+	      if ! cmp getopt_test.out ya_getopt_test.out >/dev/null; then \
+	        echo OPTSTRING=\'$$optstring\' ARGS=\'$$args\' ... FAILED; \
 	        diff -u getopt_test.out ya_getopt_test.out | head -20; \
 	        exit 1; \
 	      fi; \
 	    done; \
 	  done; \
 	done
+	@echo PASS ALL
 
 getopt_test: getopt_test.c
-	$(CC) -o getopt_test getopt_test.c
+	$(CC) $(CFLAGS) -o getopt_test getopt_test.c
 
 ya_getopt_test: getopt_test.c ../ya_getopt.c ../ya_getopt.h
-	$(CC) -o ya_getopt_test -DUSE_YA_GETOPT -I.. getopt_test.c  ../ya_getopt.c
+	$(CC) $(CFLAGS) -o ya_getopt_test -DUSE_YA_GETOPT -I.. getopt_test.c  ../ya_getopt.c
 
 clean:
 	$(RM) getopt_test ya_getopt_test getopt_test.out ya_getopt_test.out
