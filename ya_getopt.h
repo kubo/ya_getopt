@@ -33,6 +33,10 @@
 #ifndef YA_GETOPT_H
 #define YA_GETOPT_H 1
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define ya_no_argument        0
 #define ya_required_argument  1
 #define ya_optional_argument  2
@@ -64,6 +68,10 @@ extern int ya_optind, ya_opterr, ya_optopt;
 #define no_argument ya_no_argument
 #define required_argument ya_required_argument
 #define optional_argument ya_optional_argument
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif
