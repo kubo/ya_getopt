@@ -116,6 +116,10 @@ run_test "a1" "foo -1a"
 run_test "a1" "foo bar baz qux -1a"
 run_test "a0" "foo -0a"
 run_test "a0" "foo bar baz qux -0a"
+run_test "C:0" "-C+C:0 foo -0"
+run_test "C:1" "-C+C:1 foo -1"
+run_test "C:0" "-C-C:0 foo -0"
+run_test "C:1" "-C-C:1 foo -1"
 echo
 
 echo ===== with POSIXLY_CORRECT =====
