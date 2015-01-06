@@ -40,13 +40,13 @@ char *ya_optarg = NULL;
 int ya_optind = 1;
 int ya_opterr = 1;
 int ya_optopt = '?';
-static int ya_charidx = 1;
+static char *ya_optnext = NULL;
 
 static int optstarts(const char *os, char opt);
 static void ya_getopt_error(const char *optstring, const char *format, ...);
 static int ya_getopt_internal(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex, int long_only);
 static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstring, int long_only);
-static int ya_getopt_longopts(int argc, char * const argv[], int offset, const char *optstring, const struct option *longopts, int *longindex, int *long_only_flag);
+static int ya_getopt_longopts(int argc, char * const argv[], char *arg, const char *optstring, const struct option *longopts, int *longindex, int *long_only_flag);
 
 static int optstarts(const char *os, char opt)
 {
@@ -94,18 +94,26 @@ int ya_getopt_long_only(int argc, char * const argv[], const char *optstring, co
 static int ya_getopt_internal(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex, int long_only)
 {
     static int start, end;
-    const char *arg;
 
     if (ya_optopt == '?') {
         ya_optopt = 0;
     }
-    if (ya_charidx == 1 && start != 0) {
+
+    if (ya_optind == 0) {
+        ya_optind = 1;
+        ya_optnext = NULL;
+    }
+
+    if (ya_optnext == NULL && start != 0) {
         int last_pos = ya_optind - 1;
 
         ya_optind -= end - start;
+        if (ya_optind <= 0) {
+            ya_optind = 1;
+        }
         while (start < end--) {
             int i;
-            arg = argv[end];
+            char *arg = argv[end];
 
             for (i = end; i < last_pos; i++) {
                 ((char **)argv)[i] = argv[i + 1];
@@ -120,8 +128,8 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
         ya_optarg = NULL;
         return -1;
     }
-    arg = argv[ya_optind];
-    if (ya_charidx == 1) {
+    if (ya_optnext == NULL) {
+        const char *arg = argv[ya_optind];
         if (*arg != '-') {
             if (optstring[0] != '+' && getenv("POSIXLY_CORRECT") == NULL) {
                 /* GNU extension */
@@ -161,15 +169,18 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
             return -1;
         }
         if (longopts != NULL && arg[1] == '-') {
-            return ya_getopt_longopts(argc, argv, 2, optstring, longopts, longindex, NULL);
+            return ya_getopt_longopts(argc, argv, argv[ya_optind] + 2, optstring, longopts, longindex, NULL);
         }
     }
 
+    if (ya_optnext == NULL) {
+        ya_optnext = argv[ya_optind] + 1;
+    }
     if (long_only) {
         int long_only_flag = 0;
-        int rv = ya_getopt_longopts(argc, argv, ya_charidx, optstring, longopts, longindex, &long_only_flag);
+        int rv = ya_getopt_longopts(argc, argv, ya_optnext, optstring, longopts, longindex, &long_only_flag);
         if (!long_only_flag) {
-            ya_charidx = 1;
+            ya_optnext = NULL;
             return rv;
         }
     }
@@ -179,8 +190,7 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
 
 static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstring, int long_only)
 {
-    const char *arg = argv[ya_optind];
-    int opt = arg[ya_charidx];
+    int opt = *ya_optnext;
     const char *os = optstring;
 
     switch (*os) {
@@ -199,21 +209,21 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
     if (*os == 0) {
         ya_optarg = NULL;
         if (long_only) {
-            ya_getopt_error(optstring, "%s: unrecognized option '-%s'\n", argv[0], argv[ya_optind] + ya_charidx);
+            ya_getopt_error(optstring, "%s: unrecognized option '-%s'\n", argv[0], ya_optnext);
             ya_optind++;
-            ya_charidx = 1;
+            ya_optnext = NULL;
         } else {
             ya_optopt = opt;
             ya_getopt_error(optstring, "%s: invalid option -- '%c'\n", argv[0], opt);
-            if (arg[++ya_charidx] == 0) {
+            if (*(++ya_optnext) == 0) {
                 ya_optind++;
-                ya_charidx = 1;
+                ya_optnext = NULL;
             }
         }
         return '?';
     }
     if (os[1] == ':') {
-        if (argv[ya_optind][ya_charidx + 1] == 0) {
+        if (ya_optnext[1] == 0) {
             ya_optind++;
             if (os[2] == ':') {
                 /* optional argument */
@@ -233,25 +243,24 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
                 ya_optind++;
             }
         } else {
-            ya_optarg = argv[ya_optind] + ya_charidx + 1;
+            ya_optarg = ya_optnext + 1;
             ya_optind++;
         }
-        ya_charidx = 1;
+        ya_optnext = NULL;
     } else {
         ya_optarg = NULL;
-        if (argv[ya_optind][ya_charidx + 1] == 0) {
-            ya_charidx = 1;
+        if (ya_optnext[1] == 0) {
+            ya_optnext = NULL;
             ya_optind++;
         } else {
-            ya_charidx++;
+            ya_optnext++;
         }
     }
     return opt;
 }
 
-static int ya_getopt_longopts(int argc, char * const argv[], int offset, const char *optstring, const struct option *longopts, int *longindex, int *long_only_flag)
+static int ya_getopt_longopts(int argc, char * const argv[], char *arg, const char *optstring, const struct option *longopts, int *longindex, int *long_only_flag)
 {
-    char *arg = argv[ya_optind] + offset;
     char *val = NULL;
     const struct option *opt;
     size_t namelen;

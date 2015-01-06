@@ -76,6 +76,7 @@ int main(int argc, char **argv)
     int opt = -1;
     const char *optstring = getenv("OPTSTRING");
     struct rlimit rlim = {1, 1};
+    int reset_optind = 0;
 
     setrlimit(RLIMIT_CPU, &rlim); /* to prevent infinite loop */
 
@@ -91,6 +92,18 @@ int main(int argc, char **argv)
     print_opts(opt, argc, argv);
     while ((opt = getopt(argc, argv, optstring)) != -1) {
         print_opts(opt, argc, argv);
+        switch (opt) {
+        case '0':
+        case '1':
+            if (!reset_optind) {
+                optind = opt - '0';
+                reset_optind = 1;
+            }
+            break;
+        case 'C':
+            optstring = optarg;
+            break;
+        }
     }
     print_opts(opt, argc, argv);
     return 0;

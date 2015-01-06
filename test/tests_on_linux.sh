@@ -6,6 +6,7 @@ if test "`uname`" != Linux; then
 fi
 
 run_test() {
+    echo -n .
     # Collect outputs of GNU C Library getopt.
     env OPTSTRING="$1" ./getopt_test $2 2> getopt_test.out
     env OPTSTRING="$1" ./getopt_long_test $2 2> getopt_long_test.out
@@ -104,21 +105,28 @@ run_tests() {
 	    "-barg foo bar baz -barg qux quux" \
 	    "-a foo -b bar -a baz -c qux" \
 	    ; do
-	    echo -n .
 	    run_test "$optstring" "$args"
 	done
     done
 }
 
+echo ===== Change optind and/or optstring while parsing arguments  =====
+unset POSIXLY_CORRECT
+run_test "a1" "foo -1a"
+run_test "a1" "foo bar baz qux -1a"
+run_test "a0" "foo -0a"
+run_test "a0" "foo bar baz qux -0a"
+echo
+
 echo ===== with POSIXLY_CORRECT =====
 POSIXLY_CORRECT=
 export POSIXLY_CORRECT
 run_tests
-
 echo
+
 echo ===== without POSIXLY_CORRECT =====
 unset POSIXLY_CORRECT
 run_tests
-
 echo
+
 echo PASS ALL
