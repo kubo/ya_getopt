@@ -141,7 +141,7 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
         const char *arg = argv[ya_optind];
         if (*arg != '-') {
             if (handle_nonopt_argv) {
-                ya_optarg = argv[optind++];
+                ya_optarg = argv[ya_optind++];
                 start = 0;
                 return 1;
             } else if (posixly_correct) {
