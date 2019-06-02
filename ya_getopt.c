@@ -218,6 +218,7 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
     if (os[1] == ':') {
         if (ya_optnext[1] == 0) {
             ya_optind++;
+            ya_optnext = NULL;
             if (os[2] == ':') {
                 /* optional argument */
                 ya_optarg = NULL;

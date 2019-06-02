@@ -105,6 +105,7 @@ run_tests() {
 	    "-barg foo bar baz -barg qux" \
 	    "-barg foo bar baz -barg qux quux" \
 	    "-a foo -b bar -a baz -c qux" \
+	    "foo -b" \
 	    "foo - -b bar" \
 	    ; do
 	    run_test "$optstring" "$args"
