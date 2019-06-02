@@ -15,6 +15,9 @@ run_test() {
     env OPTSTRING="$1" ./ya_getopt_test $2 2> ya_getopt_test.out
     env OPTSTRING="$1" ./ya_getopt_long_test $2 2> ya_getopt_long_test.out
     env OPTSTRING="$1" ./ya_getopt_long_only_test $2 2> ya_getopt_long_only_test.out
+    # Ignore some differences in error messages.
+    sed -i "s#option '-b' is ambiguous;.*--bar' '--baz'#unrecognized option '-b'#" \
+	getopt_long_test.out getopt_long_only_test.out
     # Compare the output files respectively.
     if ! cmp getopt_test.out ya_getopt_test.out >/dev/null; then
 	echo
