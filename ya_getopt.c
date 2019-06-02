@@ -196,7 +196,7 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
 
 static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstring, int long_only)
 {
-    int opt = *ya_optnext;
+    int opt = ya_optnext[0];
     const char *os = strchr(optstring, opt);
 
     if (os == NULL) {
@@ -208,15 +208,17 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
         } else {
             ya_optopt = opt;
             ya_getopt_error(optstring, "%s: invalid option -- '%c'\n", argv[0], opt);
-            if (*(++ya_optnext) == 0) {
+            ya_optnext++;
+            if (ya_optnext[0] == '\0') {
                 ya_optind++;
                 ya_optnext = NULL;
             }
         }
         return '?';
     }
+    ya_optnext++;
     if (os[1] == ':') {
-        if (ya_optnext[1] == 0) {
+        if (ya_optnext[0] == '\0') {
             ya_optind++;
             ya_optnext = NULL;
             if (os[2] == ':') {
@@ -235,19 +237,18 @@ static int ya_getopt_shortopts(int argc, char * const argv[], const char *optstr
                 }
                 ya_optarg = argv[ya_optind];
                 ya_optind++;
+                ya_optnext = NULL; /* redundant */
             }
         } else {
-            ya_optarg = ya_optnext + 1;
+            ya_optarg = ya_optnext;
             ya_optind++;
+            ya_optnext = NULL;
         }
-        ya_optnext = NULL;
     } else {
         ya_optarg = NULL;
-        if (ya_optnext[1] == 0) {
-            ya_optnext = NULL;
+        if (ya_optnext[0] == '\0') {
             ya_optind++;
-        } else {
-            ya_optnext++;
+            ya_optnext = NULL;
         }
     }
     return opt;
