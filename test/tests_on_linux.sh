@@ -40,7 +40,7 @@ run_test() {
 }
 
 run_tests() {
-    for optstring in "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:" "-ab:" "-+ab:" "+-ab:" "-:ab:" ":-ab:"; do
+    for optstring in "" "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:" "-ab:" "-+ab:" "+-ab:" "-:ab:" ":-ab:"; do
 	for args in "" \
 	    "foo" \
 	    "-c" \

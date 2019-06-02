@@ -254,6 +254,9 @@ static int ya_getopt_longopts(int argc, char * const argv[], char *arg, const ch
     size_t namelen;
     int idx;
 
+    ya_optopt = 0;
+    ya_optarg = NULL;
+
     for (idx = 0; longopts[idx].name != NULL; idx++) {
         opt = &longopts[idx];
         namelen = strlen(opt->name);
@@ -264,7 +267,6 @@ static int ya_getopt_longopts(int argc, char * const argv[], char *arg, const ch
                 case ya_required_argument:
                     ya_optind++;
                     if (ya_optind == argc) {
-                        ya_optarg = NULL;
                         ya_optopt = opt->val;
                         ya_getopt_error(optstring, "%s: option '--%s' requires an argument\n", argv[0], opt->name);
                         if (optstring[0] == ':') {
@@ -282,7 +284,6 @@ static int ya_getopt_longopts(int argc, char * const argv[], char *arg, const ch
                     const char *hyphens = (argv[ya_optind][1] == '-') ? "--" : "-";
 
                     ya_optind++;
-                    ya_optarg = NULL;
                     ya_optopt = opt->val;
                     ya_getopt_error(optstring, "%s: option '%s%s' doesn't allow an argument\n", argv[0], hyphens, opt->name);
                     return '?';
