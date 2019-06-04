@@ -40,6 +40,7 @@ run_tests() {
     for optstring in "ab:" ":ab:" "ab::" ":ab::" "+ab:" "+:ab:" ":+ab:" "-ab:" "-+ab:" "+-ab:" "-:ab:" ":-ab:"; do
 	for args in "" \
 	    "foo" \
+	    "-" \
 	    "-c" \
 	    "-b foo" \
 	    "-abfoo" \
@@ -104,6 +105,7 @@ run_tests() {
 	    "-barg foo bar baz -barg qux" \
 	    "-barg foo bar baz -barg qux quux" \
 	    "-a foo -b bar -a baz -c qux" \
+	    "foo - -b bar" \
 	    ; do
 	    run_test "$optstring" "$args"
 	done

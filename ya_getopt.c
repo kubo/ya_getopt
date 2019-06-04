@@ -74,6 +74,11 @@ static void check_gnu_extension(const char *optstring)
     }
 }
 
+static int is_option(const char *arg)
+{
+    return arg[0] == '-' && arg[1] != '\0';
+}
+
 int ya_getopt(int argc, char * const argv[], const char *optstring)
 {
     return ya_getopt_internal(argc, argv, optstring, NULL, NULL, 0);
@@ -139,7 +144,7 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
     }
     if (ya_optnext == NULL) {
         const char *arg = argv[ya_optind];
-        if (*arg != '-') {
+        if (!is_option(arg)) {
             if (handle_nonopt_argv) {
                 ya_optarg = argv[ya_optind++];
                 start = 0;
@@ -152,7 +157,7 @@ static int ya_getopt_internal(int argc, char * const argv[], const char *optstri
 
                 start = ya_optind;
                 for (i = ya_optind + 1; i < argc; i++) {
-                    if (argv[i][0] == '-') {
+                    if (is_option(argv[i])) {
                         end = i;
                         break;
                     }
